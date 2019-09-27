@@ -21,17 +21,20 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
     
     if(gameEnded) return;
 
-    document.querySelector('.dice').style.display = 'block';
-    var randomNumber = Math.floor((Math.random() *6 )) + 1;
-    document.querySelector('.dice').src = 'dice-'+randomNumber+'.png';
+    document.querySelector('#dice1').style.display = 'block';
+    document.querySelector('#dice2').style.display = 'block';
+    var randomNumber1 = Math.floor((Math.random() *6 )) + 1;
+    var randomNumber2 = Math.floor((Math.random() *6 )) + 1;
+    document.querySelector('#dice1').src = 'dice-'+randomNumber1+'.png';
+    document.querySelector('#dice2').src = 'dice-'+randomNumber2+'.png';
 
-    if(randomNumber!==1 && !(randomNumber===6 && prevRoll === 6)){
-        roundScore += randomNumber;
+    if(randomNumber1!==1 && randomNumber2!==1 && !(randomNumber1===6 && prevRoll === 6)){
+        roundScore += randomNumber1 + randomNumber2;
         document.getElementById('current-'+currentPlayer).textContent = roundScore;
     } else {
         changeCurrentPlayer();
     }
-    prevRoll = randomNumber;
+    prevRoll = randomNumber1;
 });
 
 document.querySelector('.btn-hold').addEventListener('click', function(){
@@ -74,13 +77,14 @@ function newGame() {
     roundScore = 0;
     currentPlayer = 0;
     prevRoll = 0;
-    document.querySelector('.dice').style.display = 'none';
+    document.querySelector('#dice1').style.display = 'none';
+    document.querySelector('#dice2').style.display = 'none';
     document.getElementById('score-0').textContent = '0';
     document.getElementById('score-1').textContent = '0';
     document.getElementById('current-0').textContent = '0';
     document.getElementById('current-1').textContent = '0';
-    document.getElementById('name-0').textContent = 'Player 1';
-    document.getElementById('name-1').textContent = 'Player 2';
+    document.getElementById('name-0').textContent = 'Vaish the Bitch!';
+    document.getElementById('name-1').textContent = 'Karthik the Great!';
     document.querySelector('.player-0-panel').classList.remove('active');
     document.querySelector('.player-1-panel').classList.remove('active');
     document.querySelector('.player-0-panel').classList.remove('winner');
