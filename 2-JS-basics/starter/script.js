@@ -186,19 +186,24 @@ console.log(john.indexOf('emily')); // -1
 // Everything in JS is an object (except primitives)
 // two ways to create objects
 
-// 1. 
+// 1. Object Literal
 var siva = {
     name: 'Siva Narisetty',
     job: 'Developer',
     age: 30
 };
 
-// 2.
+// 2. creating using Object()
 var karthik = new Object();
 karthik.name = 'Karthik Narisetty';
 karthik.job = 'Architect';
 karthik.age = 30.5;
 
+// 3. Valid expressions
+console.log(siva['name']);
+console.log(siva.name);
+var varName = 'name';
+console.log(siva[varName]);
 
 
 
