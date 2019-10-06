@@ -25,13 +25,31 @@ such as you displayed it on Task 4.
 
 7. Suppose this code would be a plugin for other programmers to use in their code. So make sure that all your code is 
 private and doesn't interfere with the other programmers code (Hint: we learned a special technique to do exactly that).
+
+--- Expert level ---
+
+8. After you display the result, display the next random question, so that the game never ends 
+(Hint: write a function for this and call it right after displaying the result)
+
+9. Be careful: after Task 8, the game literally never ends. So include the option to quit the game if the user writes 'exit' 
+instead of the answer. In this case, DON'T call the function from task 8.
+
+10. Track the user's score to make the game more fun! So each time an answer is correct, add 1 point to the score 
+(Hint: I'm going to use the power of closures for this, but you don't have to, just do this with the tools you feel 
+more comfortable at this point).
+
+11. Display the score in the console. Use yet another method for this.
 */
+
 
 
 // keep this all code in IIFE so that data privacy is ensured if this code is used by someother programmer
 // if the other programmer has same variable names, our data could be overwritten, so place in IIFE
 
 (function(){
+    
+    var finalScore = 0;
+    
     var Question = function(question, options, correctAnswer) {
         this.question = question;
         this.options = options;
@@ -52,11 +70,17 @@ private and doesn't interfere with the other programmers code (Hint: we learned 
     
     Question.prototype.checkAnswer = function(answer){
         var parsedAnswer = parseInt(answer);
-        if(parsedAnswer === this.correctAnswer)
+        if(parsedAnswer === this.correctAnswer){
             console.log('Correct Answer!');
+            finalScore++;
+        }
         else
             console.log('Wrong answer, try again.');
     };
+
+    Question.prototype.showFinalScore = function(){
+        console.log('Your total score is '+ finalScore);
+    }
     
     // var coolestProgrammerQuest = new Question('Who is the coolest programmer?', ['Ram', 'Siva','Madhav'], 1);
     // var professionQuest = new Question('What is the best profession?', ['Doctor', 'Engineer','Teacher'], 2);
@@ -84,6 +108,7 @@ private and doesn't interfere with the other programmers code (Hint: we learned 
     
         if(answer === 'exit'){
             console.log('Quiz stopped!');
+            question.showFinalScore();
             return;
         }
         
@@ -92,12 +117,9 @@ private and doesn't interfere with the other programmers code (Hint: we learned 
         //     console.log('Correct Answer!')
         // else
         //     console.log('Wrong answer, try again.');
-    
+        question.showFinalScore();
         AskQuestions();
     }
     
     AskQuestions();
 })();
-
-
-
