@@ -45,11 +45,26 @@ more comfortable at this point).
 
 // keep this all code in IIFE so that data privacy is ensured if this code is used by someother programmer
 // if the other programmer has same variable names, our data could be overwritten, so place in IIFE
-
 (function(){
     
-    var finalScore = 0;
+    //It is a common, not efficient way to handle final score in global variables
+    // use closures instead
+    //var finalScore = 0;
     
+    function score(){
+        var sc = 0;
+        return function(correct){
+            if(correct)
+                sc++;
+            return sc;
+        }
+    }
+
+    //this is example of taking advantage of closure
+    // eventhough score function is released from execution stack, keepScore function keeps track of it
+    // instead of using global variable, we can use this to make score not available in global space
+    var keepScore = score();
+
     var Question = function(question, options, correctAnswer) {
         this.question = question;
         this.options = options;
@@ -68,18 +83,24 @@ more comfortable at this point).
         //     this.options[2]);
     }
     
-    Question.prototype.checkAnswer = function(answer){
+    Question.prototype.checkAnswer = function(answer, keepScore){
         var parsedAnswer = parseInt(answer);
+        var sc;
         if(parsedAnswer === this.correctAnswer){
             console.log('Correct Answer!');
-            finalScore++;
+            //finalScore++;
+            sc = keepScore(true); 
         }
-        else
+        else{
             console.log('Wrong answer, try again.');
+            sc = keepScore(false);
+        }
+        
+        this.showFinalScore(sc);
     };
 
-    Question.prototype.showFinalScore = function(){
-        console.log('Your total score is '+ finalScore);
+    Question.prototype.showFinalScore = function(scr){
+        console.log('Your total score is '+ scr + '\n--------------------------------');
     }
     
     // var coolestProgrammerQuest = new Question('Who is the coolest programmer?', ['Ram', 'Siva','Madhav'], 1);
@@ -108,16 +129,16 @@ more comfortable at this point).
     
         if(answer === 'exit'){
             console.log('Quiz stopped!');
-            question.showFinalScore();
+            question.showFinalScore(keepScore(false));
             return;
         }
         
-        question.checkAnswer(answer);
+        question.checkAnswer(answer, keepScore);
         // if(answer == question.correctAnswer)
         //     console.log('Correct Answer!')
         // else
         //     console.log('Wrong answer, try again.');
-        question.showFinalScore();
+        //question.showFinalScore();
         AskQuestions();
     }
     
