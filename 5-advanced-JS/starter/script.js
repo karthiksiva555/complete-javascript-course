@@ -1,0 +1,103 @@
+/////////////////////////////
+// CODING CHALLENGE
+
+
+/*
+--- Let's build a fun quiz game in the console! ---
+
+1. Build a function constructor called Question to describe a question. A question should include:
+a) question itself
+b) the answers from which the player can choose the correct one (choose an adequate data structure here, array, object, etc.)
+c) correct answer (I would use a number for this)
+
+2. Create a couple of questions using the constructor
+
+3. Store them all inside an array
+
+4. Select one random question and log it on the console, together with the possible answers (each question should have a number)
+ (Hint: write a method for the Question objects for this task).
+
+5. Use the 'prompt' function to ask the user for the correct answer. The user should input the number of the correct answer 
+such as you displayed it on Task 4.
+
+6. Check if the answer is correct and print to the console whether the answer is correct ot nor 
+(Hint: write another method for this).
+
+7. Suppose this code would be a plugin for other programmers to use in their code. So make sure that all your code is 
+private and doesn't interfere with the other programmers code (Hint: we learned a special technique to do exactly that).
+*/
+
+
+// keep this all code in IIFE so that data privacy is ensured if this code is used by someother programmer
+// if the other programmer has same variable names, our data could be overwritten, so place in IIFE
+
+(function(){
+    var Question = function(question, options, correctAnswer) {
+        this.question = question;
+        this.options = options;
+        this.correctAnswer = correctAnswer;
+    }
+    
+    Question.prototype.printQuestion = function(){
+        
+        console.log(this.question);
+        for(var i=0; i< this.options.length;i++)
+            console.log(i +': '+this.options[i]);
+        
+        // console.log(this.question + '\n 0:'+
+        //     this.options[0] + '\n 1:' +
+        //     this.options[1] + '\n 2:' +
+        //     this.options[2]);
+    }
+    
+    Question.prototype.checkAnswer = function(answer){
+        var parsedAnswer = parseInt(answer);
+        if(parsedAnswer === this.correctAnswer)
+            console.log('Correct Answer!');
+        else
+            console.log('Wrong answer, try again.');
+    };
+    
+    // var coolestProgrammerQuest = new Question('Who is the coolest programmer?', ['Ram', 'Siva','Madhav'], 1);
+    // var professionQuest = new Question('What is the best profession?', ['Doctor', 'Engineer','Teacher'], 2);
+    // var handsomeQuest = new Question('Who is the most handsome man ever lived?', 
+    // ['Tom Cruise', 'Hrithik Roshan', 'Dr. A.P.J. Abdul Kalam'], 2);
+    
+    // var questionnaire = [coolestProgrammerQuest, professionQuest, handsomeQuest];
+    
+    var questionnaire = [
+        new Question('Who is the coolest programmer?', ['Ram', 'Siva','Madhav'], 1),
+        new Question('What is the best profession?', ['Doctor', 'Engineer','Teacher'], 2),
+        new Question('Who is the most handsome man ever lived?', ['Tom Cruise', 'Hrithik Roshan', 'Dr. A.P.J. Abdul Kalam'], 2)
+    ];
+    
+    function AskQuestions() {
+        var randomNum = Math.floor(Math.random()*questionnaire.length);
+        var question = questionnaire[randomNum];
+        question.printQuestion();
+        // console.log(question.question + '\n 0:'+
+        //     question.options[0] + '\n 1:' +
+        //     question.options[1] + '\n 2:' +
+        //     question.options[2]);
+    
+        var answer = window.prompt('Enter your answer (type exit if you want to stop quiz):');
+    
+        if(answer === 'exit'){
+            console.log('Quiz stopped!');
+            return;
+        }
+        
+        question.checkAnswer(answer);
+        // if(answer == question.correctAnswer)
+        //     console.log('Correct Answer!')
+        // else
+        //     console.log('Wrong answer, try again.');
+    
+        AskQuestions();
+    }
+    
+    AskQuestions();
+})();
+
+
+
