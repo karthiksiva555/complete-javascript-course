@@ -70,16 +70,72 @@ var UILayer = (function(){
         type: '.add__type',
         description: '.add__description',
         value: '.add__value',
-        addButton: '.add__btn'
+        addButton: '.add__btn',
+        incomeList:'.income__list',
+        expenseList:'.expenses__list',
+        totalIncomeLabel: '.budget__income--value',
+        totalExpenseLabel:'.budget__expenses--value',
+        budgetLabel: '.budget__value',
+        percentageLabel:'.budget__expenses--percentage'
     }
 
     function readUserInputPrivate(){
         return {
             type: document.querySelector(DOMStrings.type).value,
             description: document.querySelector(DOMStrings.description).value,
-            value: document.querySelector(DOMStrings.value).value
+            value: parseFloat(document.querySelector(DOMStrings.value).value)
         };
     }
+
+    function clearInputFieldsPrivate(){
+        var fields, fieldArr;
+
+        fields = document.querySelectorAll(DOMStrings.description+', '+DOMStrings.value);
+        fieldArr = Array.prototype.slice.call(fields);
+
+        fieldArr.forEach(element => {
+            element.value = '';
+        });
+        fieldArr[0].focus();
+    }
+
+    function addListItemPrivate(item, type){
+
+        var html, htmlToAdd, element;
+        // create the placeholder for the income
+        if(type==='inc'){
+            element = DOMStrings.incomeList;
+            html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%desc%</div>'+
+                         '<div class="right clearfix"><div class="item__value">+ %val%</div>'+
+                         '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i>'+
+                         '</button></div></div></div>';
+        } else {
+            element = DOMStrings.expenseList;
+            html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%desc%</div>'+
+                    '<div class="right clearfix"><div class="item__value">- %val%</div><div class="item__percentage">21%</div>'+
+                    '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>'+
+                    '</div></div></div>';
+        }
+
+        // replace the placeholders with actual values
+        htmlToAdd = html.replace('%id%', item.id)
+                        .replace('%desc%', item.description)
+                        .replace('%val%', item.value);
+
+        // insert the HTML to the DOM
+        document.querySelector(element).insertAdjacentHTML('beforeend', htmlToAdd);
+    }
+
+    var updateBudgetDetailsPrivate = function(budget){
+        document.querySelector(DOMStrings.totalIncomeLabel).textContent = budget.totalInc;
+        document.querySelector(DOMStrings.totalExpenseLabel).textContent = budget.totalExp;
+        document.querySelector(DOMStrings.budgetLabel).textContent = budget.budget;
+        if(budget.percentage>0){
+            document.querySelector(DOMStrings.percentageLabel).textContent = budget.percentage;
+        } else {
+            document.querySelector(DOMStrings.percentageLabel).textContent = '---';
+        }
+    };
 
     return {
         readUserInput: function (){
@@ -87,6 +143,15 @@ var UILayer = (function(){
         },
         getDOMStrings: function(){
             return DOMStrings;
+        },
+        addListItem: function(item, type){
+            addListItemPrivate(item, type);
+        },
+        clearInputFields: function(){
+            clearInputFieldsPrivate();
+        },
+        updateBudgetDetails: function(budget){
+            updateBudgetDetailsPrivate(budget);
         }
     }
  
@@ -114,7 +179,18 @@ var dataLayer = (function(){
         totals:{
             inc:0,
             exp:0
-        }
+        },
+        budget:0,
+        percentage:-1 // to represent there is nothing because 0% gives a meaning
+    };
+
+    var calculateBudgetPrivate = function(){
+
+        // 1. income - expenses = available budget
+        data.budget = data.totals.inc - data.totals.exp;
+
+        // 2. percentage of spending = expenses/income * 100
+        data.percentage = data.totals.inc>0 ? Math.round((data.totals.exp/data.totals.inc)*100.0) : -1;
     };
 
     return {
@@ -129,7 +205,20 @@ var dataLayer = (function(){
                 item = new Income(nextId, description, value);
 
             data.items[type].push(item);
-            data.totals[type] += parseFloat(value);
+            data.totals[type] += value;
+
+            return item;
+        },
+        calculateBudget: function(){
+            calculateBudgetPrivate();
+        },
+        getBudget: function(){
+            return {
+                budget: data.budget.toFixed(2),
+                percentage : data.percentage.toFixed(2),
+                totalExp: data.totals.exp.toFixed(2),
+                totalInc: data.totals.inc.toFixed(2)
+            };
         },
         printData: function(){
             console.log(data);
@@ -150,6 +239,20 @@ var controllerLayer = (function(ui, data){
         });
     }; 
 
+    function updateBudget(){
+
+        // 1. Calculate the budget
+        dataLayer.calculateBudget();
+
+        // 2. get current budget details
+        var budget = dataLayer.getBudget();
+        console.log(budget);
+        
+        // 3. Update the UI with the calculated budget details
+        UILayer.updateBudgetDetails(budget);
+
+    };
+
     function addItem(){
 
         var item, itemAdded;
@@ -159,15 +262,34 @@ var controllerLayer = (function(ui, data){
         item = ui.readUserInput();
         //console.log(item);
         
-        // 2. create expense or income based on type
-        itemAdded = dataLayer.addItem(item.type, item.description, item.value);
-        dataLayer.printData();
-        // 3. Add it to the UI
+        // Add data only if description and value are valid 
+        if(item.description && !isNaN(item.value) && item.value>0){
+            // 2. create expense or income based on type
+            itemAdded = dataLayer.addItem(item.type, item.description, item.value);
+            //dataLayer.printData();
+            
+            // 3. Add it to the UI
+            UILayer.addListItem(itemAdded, item.type);
+
+            // 4. Clear all the input fields
+            UILayer.clearInputFields();
+
+            // 5. Calculate and update budget
+            updateBudget();
+        }
     }
 
     return {
         init: function(){
             console.log('This is the only endpoint to start/stop the application.');
+            UILayer.updateBudgetDetails(
+                {
+                    budget: 0,
+                    percentage : -1,
+                    totalExp: 0,
+                    totalInc: 0
+                }
+            );
             setupEventListeners();
         }
     };
