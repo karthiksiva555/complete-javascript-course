@@ -76,7 +76,8 @@ var UILayer = (function(){
         totalIncomeLabel: '.budget__income--value',
         totalExpenseLabel:'.budget__expenses--value',
         budgetLabel: '.budget__value',
-        percentageLabel:'.budget__expenses--percentage'
+        percentageLabel:'.budget__expenses--percentage',
+        containerLabel: '.container'
     }
 
     function readUserInputPrivate(){
@@ -105,13 +106,13 @@ var UILayer = (function(){
         // create the placeholder for the income
         if(type==='inc'){
             element = DOMStrings.incomeList;
-            html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%desc%</div>'+
+            html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%desc%</div>'+
                          '<div class="right clearfix"><div class="item__value">+ %val%</div>'+
                          '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i>'+
                          '</button></div></div></div>';
         } else {
             element = DOMStrings.expenseList;
-            html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%desc%</div>'+
+            html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%desc%</div>'+
                     '<div class="right clearfix"><div class="item__value">- %val%</div><div class="item__percentage">21%</div>'+
                     '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>'+
                     '</div></div></div>';
@@ -124,6 +125,12 @@ var UILayer = (function(){
 
         // insert the HTML to the DOM
         document.querySelector(element).insertAdjacentHTML('beforeend', htmlToAdd);
+    }
+
+    function deleteListItemPrivate(controlId){
+        // we cannot remove an element by ID. So find the element, get the parent and use removeChild() 
+        var ele = document.getElementById(controlId);
+        ele.parentNode.removeChild(ele);
     }
 
     var updateBudgetDetailsPrivate = function(budget){
@@ -152,6 +159,9 @@ var UILayer = (function(){
         },
         updateBudgetDetails: function(budget){
             updateBudgetDetailsPrivate(budget);
+        },
+        deleteListItem: function(controlId){
+            deleteListItemPrivate(controlId);
         }
     }
  
@@ -184,30 +194,77 @@ var dataLayer = (function(){
         percentage:-1 // to represent there is nothing because 0% gives a meaning
     };
 
+    var calculateTotal = function(type){
+        var sum = 0;
+
+        data.items[type].forEach(function(current){
+            sum+=current.value;
+        });
+
+        data.totals[type] = sum;
+    };
+
     var calculateBudgetPrivate = function(){
 
-        // 1. income - expenses = available budget
+        // 1. Calculate the totals of inc and exp
+        calculateTotal('inc');
+        calculateTotal('exp');
+        
+        // 2. income - expenses = available budget
         data.budget = data.totals.inc - data.totals.exp;
 
-        // 2. percentage of spending = expenses/income * 100
+        // 3. percentage of spending = expenses/income * 100
         data.percentage = data.totals.inc>0 ? Math.round((data.totals.exp/data.totals.inc)*100.0) : -1;
+    };
+
+    var addItemPrivate = function(type, description, value){
+        var item;
+        var nextId = 0;
+
+        if(data.items[type] && data.items[type].length>0){
+            // get the Id of last item of array and add 1
+            nextId = data.items[type][data.items[type].length-1].id + 1;
+            console.log(nextId);
+        } 
+        
+        if(type==='exp')
+            item = new Expense(nextId, description, value);
+        else
+            item = new Income(nextId, description, value);
+
+        data.items[type].push(item);
+        //data.totals[type] += value; // this calculation is now done in calculateTotal()
+
+        return item;
+    };
+
+    var deleteItemPrivate = function(type, id){
+        
+        var index;
+        // console.log(data.items[type].indexOf(data.items[type][id])); // prints the index of item by type-id
+        // console.log(data.items[type][id] + ': this can access the item but cannot be removed from array');
+
+        // way 1
+        //index = data.items[type].indexOf(data.items[type][id]);
+      
+        // way 2: extract only IDs from the income/expense list
+        var ids = data.items[type].map(function(current){
+            return current.id;
+        });
+        //console.log(ids);
+        index = ids.indexOf(id);
+
+        if(index!==-1){
+            data.items[type].splice(index, 1);
+        }
     };
 
     return {
         addItem: function(type, description, value){
-            var item;
-            var nextId = 0;
-            if(data.items[type] && data.items[type].length>0) nextId = data.items[type].length;
-            
-            if(type==='exp')
-                item = new Expense(nextId, description, value);
-            else
-                item = new Income(nextId, description, value);
-
-            data.items[type].push(item);
-            data.totals[type] += value;
-
-            return item;
+            return addItemPrivate(type, description, value);
+        },
+        deleteItem: function(type, id){
+            deleteItemPrivate(type, id);
         },
         calculateBudget: function(){
             calculateBudgetPrivate();
@@ -237,6 +294,10 @@ var controllerLayer = (function(ui, data){
         document.addEventListener('keypress', function(e){
             if(e.keyCode === 13 || e.which === 13) addItem(); 
         });
+
+        // taking advantage of Event Bubbling, adding event listener on 'container' which is parent for both income and expense list
+        // any click on either income or expense, will bubble up to container div
+        document.querySelector(domStrings.containerLabel).addEventListener('click', deleteItem);
     }; 
 
     function updateBudget(){
@@ -246,7 +307,7 @@ var controllerLayer = (function(ui, data){
 
         // 2. get current budget details
         var budget = dataLayer.getBudget();
-        console.log(budget);
+        //console.log(budget);
         
         // 3. Update the UI with the calculated budget details
         UILayer.updateBudgetDetails(budget);
@@ -277,7 +338,30 @@ var controllerLayer = (function(ui, data){
             // 5. Calculate and update budget
             updateBudget();
         }
-    }
+    };
+
+    function deleteItem(event){
+        var ctrlId;
+        
+        // the target element is <i class="ion-ios-close-outline"></i> 
+        // so navigate till you find the div with id inc-0 or exp-o;
+        ctrlId = event.target.parentNode.parentNode.parentNode.parentNode.id;
+
+        if(ctrlId){
+            var typeAndId = ctrlId.split('-');
+            var type = typeAndId[0];
+            var id = parseInt(typeAndId[1]);
+
+            // 1. Delete the item from data structure
+            dataLayer.deleteItem(type, id);
+
+            // 2. Delete the item from UI
+            UILayer.deleteListItem(ctrlId);
+
+            // 3. Update budget
+            updateBudget();
+        }
+    };
 
     return {
         init: function(){
