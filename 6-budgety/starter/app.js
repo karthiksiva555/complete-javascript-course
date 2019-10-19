@@ -100,6 +100,21 @@ var UILayer = (function(){
         fieldArr[0].focus();
     }
 
+    /* Format number:
+    1.  + or - for inc or exp 
+    2. fix the decimal places to 2
+    3. separate thousands with comma
+    */
+    function formatNumber(num, type){
+
+        num = Math.abs(num);
+        num = num.toFixed(2);
+        var parts = num.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    
+        return (type==='exp' ? '- ':'+ ') + parts[0] + '.'+ parts[1];
+    }
+
     function addListItemPrivate(item, type){
 
         var html, htmlToAdd, element;
@@ -107,13 +122,13 @@ var UILayer = (function(){
         if(type==='inc'){
             element = DOMStrings.incomeList;
             html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%desc%</div>'+
-                         '<div class="right clearfix"><div class="item__value">+ %val%</div>'+
+                         '<div class="right clearfix"><div class="item__value">%val%</div>'+
                          '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i>'+
                          '</button></div></div></div>';
         } else {
             element = DOMStrings.expenseList;
             html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%desc%</div>'+
-                    '<div class="right clearfix"><div class="item__value">- %val%</div><div class="item__percentage">21%</div>'+
+                    '<div class="right clearfix"><div class="item__value">%val%</div><div class="item__percentage">21%</div>'+
                     '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>'+
                     '</div></div></div>';
         }
@@ -121,7 +136,7 @@ var UILayer = (function(){
         // replace the placeholders with actual values
         htmlToAdd = html.replace('%id%', item.id)
                         .replace('%desc%', item.description)
-                        .replace('%val%', item.value);
+                        .replace('%val%', formatNumber(item.value, type));
 
         // insert the HTML to the DOM
         document.querySelector(element).insertAdjacentHTML('beforeend', htmlToAdd);
@@ -134,9 +149,9 @@ var UILayer = (function(){
     }
 
     var updateBudgetDetailsPrivate = function(budget){
-        document.querySelector(DOMStrings.totalIncomeLabel).textContent = budget.totalInc;
-        document.querySelector(DOMStrings.totalExpenseLabel).textContent = budget.totalExp;
-        document.querySelector(DOMStrings.budgetLabel).textContent = budget.budget;
+        document.querySelector(DOMStrings.totalIncomeLabel).textContent = formatNumber(budget.totalInc, 'inc');
+        document.querySelector(DOMStrings.totalExpenseLabel).textContent = formatNumber(budget.totalExp, 'exp');
+        document.querySelector(DOMStrings.budgetLabel).textContent = formatNumber(budget.budget, budget.budget<0?'exp':'inc');
         if(budget.percentage>0){
             document.querySelector(DOMStrings.percentageLabel).textContent = budget.percentage;
         } else {
@@ -175,10 +190,11 @@ var dataLayer = (function(){
         this.value = value;
     };
 
-    var Expense = function(id, description, value){
+    var Expense = function(id, description, value, percentage){
         this.id = id;
         this.description = description;
         this.value = value;
+        this.percentage = percentage;
     };
 
     var data = {
