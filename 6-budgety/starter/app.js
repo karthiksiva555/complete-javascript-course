@@ -77,7 +77,9 @@ var UILayer = (function(){
         totalExpenseLabel:'.budget__expenses--value',
         budgetLabel: '.budget__value',
         percentageLabel:'.budget__expenses--percentage',
-        containerLabel: '.container'
+        containerLabel: '.container',
+        percentageItemLabel: '.item__percentage',
+        monthYear: '.budget__title--month'
     }
 
     function readUserInputPrivate(){
@@ -99,6 +101,19 @@ var UILayer = (function(){
         });
         fieldArr[0].focus();
     }
+
+    function setMonthAndYearPrivate(){
+
+        var year, months, now, month;
+        
+        months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 
+            'November', 'December'];
+        now = new Date();
+        month = now.getMonth();
+        year = now.getFullYear();
+        document.querySelector(DOMStrings.monthYear).textContent = months[month]+ ' '+year;
+    }
+
 
     /* Format number:
     1.  + or - for inc or exp 
@@ -148,6 +163,26 @@ var UILayer = (function(){
         ele.parentNode.removeChild(ele);
     }
 
+    //list doesn't support forEach so we need to convert a list to Array
+    // this function mimics forEach for list so that we don't have to convert list to array; 
+    var nodeListForEach = function(list, callBack){
+
+        for(var i=0;i<list.length; i++){
+            callBack(list[i], i);
+        }
+    };
+
+    var updatePercentagesPrivate = function(percentages){
+
+        var expenseList = document.querySelectorAll(DOMStrings.percentageItemLabel);
+        // console.log(expenseList);
+        // assign percentage based on index of list item
+        nodeListForEach(expenseList, function(cur, i){
+            //console.log(percentages[i]);
+            cur.textContent = percentages[i]>=0?percentages[i] + '%' : '---';
+        });
+    };
+
     var updateBudgetDetailsPrivate = function(budget){
         document.querySelector(DOMStrings.totalIncomeLabel).textContent = formatNumber(budget.totalInc, 'inc');
         document.querySelector(DOMStrings.totalExpenseLabel).textContent = formatNumber(budget.totalExp, 'exp');
@@ -158,6 +193,16 @@ var UILayer = (function(){
             document.querySelector(DOMStrings.percentageLabel).textContent = '---';
         }
     };
+
+    var inputTypeChangedPrivate = function() {
+        var inputFields = document.querySelectorAll(DOMStrings.type +','+DOMStrings.description+','+DOMStrings.value);
+
+        nodeListForEach(inputFields, function(cur){
+            cur.classList.toggle('red-focus');
+        });
+
+        document.querySelector(DOMStrings.addButton).classList.toggle('red');   
+    }; 
 
     return {
         readUserInput: function (){
@@ -177,9 +222,17 @@ var UILayer = (function(){
         },
         deleteListItem: function(controlId){
             deleteListItemPrivate(controlId);
+        },
+        setMonthAndYear: function(){
+            setMonthAndYearPrivate();
+        },
+        updatePercentages: function(percentages){
+            updatePercentagesPrivate(percentages);
+        },
+        inputTypeChanged: function(){
+            inputTypeChangedPrivate();
         }
     }
- 
 })();
 
 var dataLayer = (function(){
@@ -230,7 +283,7 @@ var dataLayer = (function(){
         data.budget = data.totals.inc - data.totals.exp;
 
         // 3. percentage of spending = expenses/income * 100
-        data.percentage = data.totals.inc>0 ? Math.round((data.totals.exp/data.totals.inc)*100.0) : -1;
+        data.percentage = data.totals.inc>=0 ? Math.round((data.totals.exp/data.totals.inc)*100.0) : -1;
     };
 
     var addItemPrivate = function(type, description, value){
@@ -240,7 +293,7 @@ var dataLayer = (function(){
         if(data.items[type] && data.items[type].length>0){
             // get the Id of last item of array and add 1
             nextId = data.items[type][data.items[type].length-1].id + 1;
-            console.log(nextId);
+            //console.log(nextId);
         } 
         
         if(type==='exp')
@@ -275,6 +328,17 @@ var dataLayer = (function(){
         }
     };
 
+    /*  percentage logic
+        if total income is 100, expense A is 20 => A is 20% of total income
+        percentage = expense / total income * 100 
+    */
+    var calculatePercentagePrivate = function(){
+
+        data.items.exp.forEach(function(cur){
+            cur.percentage = Math.round((cur.value/data.totals.inc)*100);
+        });
+    };
+
     return {
         addItem: function(type, description, value){
             return addItemPrivate(type, description, value);
@@ -285,14 +349,25 @@ var dataLayer = (function(){
         calculateBudget: function(){
             calculateBudgetPrivate();
         },
+        calculatePercentage: function(){
+            calculatePercentagePrivate();
+        },
+        getPercentages: function(){
+            var percentages= data.items.exp.map(function(cur){
+                return cur.percentage;
+            });
+
+            return percentages;
+        },
         getBudget: function(){
             return {
-                budget: data.budget.toFixed(2),
-                percentage : data.percentage.toFixed(2),
-                totalExp: data.totals.exp.toFixed(2),
-                totalInc: data.totals.inc.toFixed(2)
+                budget: data.budget,
+                percentage : data.percentage,
+                totalExp: data.totals.exp,
+                totalInc: data.totals.inc
             };
         },
+
         printData: function(){
             console.log(data);
         }
@@ -314,6 +389,7 @@ var controllerLayer = (function(ui, data){
         // taking advantage of Event Bubbling, adding event listener on 'container' which is parent for both income and expense list
         // any click on either income or expense, will bubble up to container div
         document.querySelector(domStrings.containerLabel).addEventListener('click', deleteItem);
+        document.querySelector(domStrings.type).addEventListener('change', UILayer.inputTypeChanged);
     }; 
 
     function updateBudget(){
@@ -327,7 +403,6 @@ var controllerLayer = (function(ui, data){
         
         // 3. Update the UI with the calculated budget details
         UILayer.updateBudgetDetails(budget);
-
     };
 
     function addItem(){
@@ -353,6 +428,10 @@ var controllerLayer = (function(ui, data){
 
             // 5. Calculate and update budget
             updateBudget();
+
+            // 6. calculate and update percentages
+            updatePercentages();
+
         }
     };
 
@@ -376,12 +455,29 @@ var controllerLayer = (function(ui, data){
 
             // 3. Update budget
             updateBudget();
+
+            // 4. calculate and update percentages
+            updatePercentages()
         }
     };
 
+    function updatePercentages(){
+        
+        // 1. calculate percentages
+        dataLayer.calculatePercentage();
+
+        // 2. get percentages
+        var percentages = dataLayer.getPercentages();
+
+        // 3. update UI with calculated percentages
+        UILayer.updatePercentages(percentages);
+        //console.log(percentages);
+    }
+    
     return {
         init: function(){
             console.log('This is the only endpoint to start/stop the application.');
+            UILayer.setMonthAndYear();
             UILayer.updateBudgetDetails(
                 {
                     budget: 0,
