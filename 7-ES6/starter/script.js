@@ -457,6 +457,105 @@ HINT: Use some of the ES6 features: classes, subclasses, template strings, defau
 
 */
 
+// ----------------------------------------VERSION 1--------------------------------------
+
+// class TownElement {
+//     constructor(name, buildYear){
+//         this.name = name;
+//         this.buildYear = buildYear;
+//     }
+// }
+
+// class Park extends TownElement{
+//     constructor(name, buildYear, parkArea, noOfTrees){
+//         super(name, buildYear);
+//         this.parkArea = parkArea;
+//         this.noOfTrees = noOfTrees;
+//     }
+
+//     calculateTreeDensity(){
+//         const density = (this.noOfTrees/this.parkArea).toFixed(2);
+//         console.log(`The park ${this.name}'s density is ${density} per square kilometer`);
+//     }
+// }
+
+// const allParks = [  new Park('McGregor', 2000, 2.2, 300),
+//                     new Park('Victoria', 1993, 3.4, 1004),  
+//                     new Park('Queens Park', 1967, 5.3, 950)
+//                  ];
+
+// const printAverageAge = function(){
+//     let totalAge = 0;
+//     allParks.forEach(park=>totalAge+=(2019-park.buildYear));
+//     console.log(`The average age of park is ${Math.round(totalAge/3)} years`);
+// };
+
+// // 3. name of park that has more than 1000 trees
+// const parkWith1000Trees = function(){
+//     for(let park of allParks){
+//         if(park.noOfTrees<1000) continue;
+//         console.log(`The ${park.name} has ${park.noOfTrees} trees`);
+//     }
+// };
+
+// const reportParkData = function(){
+//     console.log('-------------------PARK REPORT------------------');
+    
+//     // 1. Park Density
+//     allParks.forEach((park)=>park.calculateTreeDensity());
+
+//     // 2. Average age
+//     printAverageAge();
+
+//     // 3. Park with more than 1000 trees
+//     parkWith1000Trees();
+// };
+
+// class Street extends TownElement{
+//     constructor(name, buildYear, length, size = 'normal'){
+//         super(name, buildYear);
+//         this.length = length;
+//         this.size = size;
+//     }
+
+//     printStreetData(){
+//         console.log(`The street ${this.name} is built in ${this.buildYear} and is a ${this.size} street`);
+//     }
+// }
+
+// let allStreets = [new Street('Hollingworth', 1945, 3, 'small'),
+//                  new Street('Ramji Nagar', 1989, 1.2),
+//                 new Street('Ellesmere', 2000, 34, 'big'),
+//                 new Street('Younge', 1900, 594, 'huge')];
+// const calculateAverageLength = function(){
+//     let totalLength = 0;
+//     allStreets.forEach(street => totalLength+=street.length);
+//     return [totalLength, totalLength/3];
+// };
+
+// const reportStreetData = function(){
+//     console.log('-------------------STREET REPORT------------------');
+
+//     // 4. Total and average length of streets
+//     const [totalLen, avgLen] = calculateAverageLength();
+//     console.log(`The total length of streets is ${totalLen.toFixed(2)} km and average is ${avgLen.toFixed(2)} km`);
+
+//     // 5. print street build year with size info
+//     allStreets.forEach(street=> street.printStreetData());
+// };
+
+// reportParkData();
+// reportStreetData();
+
+// ----------------------------------------VERSION 2--------------------------------------
+
+// improvisations
+// 1. use map to store street size instead of storing string
+// 2. use reduce method on array to sum up all elements instead of using forEach to loop through
+// 3. instead of hardcoding 2019, use new Date().getFullYear() to keep the app up to date
+// 4. use findIndex to get the name of park with more than 1000 trees 
+// 5. create one function to return sum and avg of array
+
 class TownElement {
     constructor(name, buildYear){
         this.name = name;
@@ -465,8 +564,6 @@ class TownElement {
 }
 
 class Park extends TownElement{
-    static noOfParks = 0;
-    static totalAge = 0;
     constructor(name, buildYear, parkArea, noOfTrees){
         super(name, buildYear);
         this.parkArea = parkArea;
@@ -485,17 +582,22 @@ const allParks = [  new Park('McGregor', 2000, 2.2, 300),
                  ];
 
 const printAverageAge = function(){
-    let totalAge = 0;
-    allParks.forEach(park=>totalAge+=(2019-park.buildYear));
-    console.log(`The average age of park is ${Math.round(totalAge/3)} years`);
+    const ages = allParks.map(park=>new Date().getFullYear()-park.buildYear);
+    const[total, avg] = getSumAndAvg(ages);
+    console.log(`The average age of parks is ${Math.round(avg)} years`);
+};
+
+const getSumAndAvg = function(arr){
+    // use reduce function to calculate sum
+    const total = arr.reduce((prev, cur, index)=>prev+cur, 0);
+    return [total, total/arr.length];
 };
 
 // 3. name of park that has more than 1000 trees
 const parkWith1000Trees = function(){
-    for(let park of allParks){
-        if(park.noOfTrees<1000) continue;
-        console.log(`The ${park.name} has ${park.noOfTrees} trees`);
-    }
+    // find the index of park with more than 1000 trees
+    const i = allParks.map(p=>p.noOfTrees).findIndex(t=>t>=1000);
+    console.log(`The ${allParks[i].name} has more than 1000 trees`);
 };
 
 const reportParkData = function(){
@@ -512,21 +614,28 @@ const reportParkData = function(){
 };
 
 class Street extends TownElement{
-    constructor(name, buildYear, length, size = 'normal'){
+    constructor(name, buildYear, length, size = 2){
         super(name, buildYear);
         this.length = length;
         this.size = size;
     }
 
     printStreetData(){
-        console.log(`The street ${this.name} is built in ${this.buildYear} and is a ${this.size} street`);
+        const streetSize = new Map();
+        streetSize.set(0, 'tiny');
+        streetSize.set(1, 'small');
+        streetSize.set(2, 'normal');
+        streetSize.set(3, 'big');
+        streetSize.set(4, 'huge');
+
+        console.log(`The street ${this.name} is built in ${this.buildYear} and is a ${streetSize.get(this.size)} street`);
     }
 }
 
-let allStreets = [new Street('Hollingworth', 1945, 3, 'small'),
+let allStreets = [new Street('Hollingworth', 1945, 3, 1),
                  new Street('Ramji Nagar', 1989, 1.2),
-                new Street('Ellesmere', 2000, 34, 'big'),
-                new Street('Younge', 1900, 594, 'huge')];
+                new Street('Ellesmere', 2000, 34, 3),
+                new Street('Younge', 1900, 594, 4)];
 const calculateAverageLength = function(){
     let totalLength = 0;
     allStreets.forEach(street => totalLength+=street.length);
@@ -537,7 +646,8 @@ const reportStreetData = function(){
     console.log('-------------------STREET REPORT------------------');
 
     // 4. Total and average length of streets
-    const [totalLen, avgLen] = calculateAverageLength();
+    const lengthArr = allStreets.map(st=>st.length);
+    const [totalLen, avgLen] = getSumAndAvg(lengthArr);
     console.log(`The total length of streets is ${totalLen.toFixed(2)} km and average is ${avgLen.toFixed(2)} km`);
 
     // 5. print street build year with size info
