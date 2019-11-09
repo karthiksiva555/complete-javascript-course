@@ -324,3 +324,110 @@ box5.clickMe();
 // question.clear();
 // console.log(question);
 
+// 15. Class : syntactic sugar for the function constructors; class will be converted to function constructors behind scenes
+// // ES5
+// var Animal5 = function(name, numOfLegs, type){
+//     this.name = name;
+//     this.numOfLegs = numOfLegs;
+//     this.type = type;
+// };
+
+// Animal5.prototype.printAnimalType = function(){
+//     console.log('The animal '+this.name+' is of type '+this.type);
+// };
+
+// var elephant = new Animal5('Elephant', 4, 'Herbivore');
+// elephant.printAnimalType();
+
+// // ES6 : Animal class
+// class Animal6 {
+    
+//     // constructor method is mandatory
+//     constructor(name, numOfLegs, type){
+//         this.name = name;
+//         this.numOfLegs = numOfLegs;
+//         this.type = type;
+//     }
+
+//     printAnimalType(){
+//         console.log(`The animal ${this.name} is of type ${this.type}`);
+//     }
+// }
+
+// const gajam = new Animal6('Gajam', 4, 'Herbivore');
+// gajam.printAnimalType();
+
+// 16. Inheritence: use subclass and superclass
+
+// ES5
+// // super class
+// var Animal5 = function(name, numOfLegs, type){
+//     this.name = name;
+//     this.numOfLegs = numOfLegs;
+//     this.type = type;
+// };
+
+// Animal5.prototype.printAnimalType = function(){
+//     console.log('The '+this.name+' is of type '+this.type);
+// };
+
+// // subclass
+// var Bird5 = function(name, numOfLegs, type, strength, isPet){
+//     // call super class to initialize the properties
+//     //Animal5.call(this, name, numOfLegs, type);
+//     this.name = name;
+//     this.numOfLegs = numOfLegs;
+//     this.type = type;
+//     this.strength = strength;
+//     this.isPet = isPet;
+// }
+
+// // establish inheritence using object.create
+// Bird5.prototype = Object.create(Animal5.prototype);
+
+// Bird5.prototype.showStrength = function(){
+//     console.log('The '+this.name+'\'s strength is '+this.strength);
+// }
+
+// var eagle = new Bird5('Eagle', 2, 'Carnivore', 'Grip', false);
+// eagle.printAnimalType(); // super class method
+// eagle.showStrength(); // subclass method
+
+// // ES6 : Animal class
+// class Animal6 {
+    
+//     // constructor method is mandatory
+//     constructor(name, numOfLegs, type){
+//         this.name = name;
+//         this.numOfLegs = numOfLegs;
+//         this.type = type;
+//     }
+
+//     printAnimalType(){
+//         console.log(`The ${this.name} is of type ${this.type}`);
+//     }
+// }
+
+// class Bird6 extends Animal6{
+    
+//     constructor(name, numOfLegs, type, strength, isPet){
+//         // this is a mandatory call; if this line is commented, error will be thrown
+//         super(name, numOfLegs, type);
+
+//         // this would throw error: Uncaught ReferenceError: Must call super constructor in derived class before accessing 'this' 
+//         // or returning from derived constructor
+//         // this.name = name;
+//         // this.numOfLegs = numOfLegs;
+//         // this.type = type;
+//         this.strength = strength;
+//         this.isPet = isPet;
+//     }
+
+//     showStrength(){
+//         console.log(`The ${this.name}'s strength is ${this.strength}`);
+//     }
+// }
+
+// var parrot = new Bird6('Parrot', 2, 'Herbivore', 'Beak', true);
+// parrot.printAnimalType();
+// parrot.showStrength();
