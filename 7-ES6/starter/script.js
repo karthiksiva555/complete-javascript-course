@@ -431,3 +431,118 @@ box5.clickMe();
 // var parrot = new Bird6('Parrot', 2, 'Herbivore', 'Beak', true);
 // parrot.printAnimalType();
 // parrot.showStrength();
+
+//--------------------------------------------------------------------------------------------------------------------------------
+//    Coding Challenge
+//--------------------------------------------------------------------------------------------------------------------------------
+
+/*
+
+Suppose that you're working in a small town administration, and you're in charge of two town elements:
+1. Parks
+2. Streets
+
+It's a very small town, so right now there are only 3 parks and 4 streets. All parks and streets have a name and a build year.
+
+At an end-of-year meeting, your boss wants a final report with the following:
+1. Tree density of each park in the town (forumla: number of trees/park area)
+2. Average age of each town's park (forumla: sum of all ages/number of parks)
+3. The name of the park that has more than 1000 trees
+4. Total and average length of the town's streets
+5. Size classification of all streets: tiny/small/normal/big/huge. If the size is unknown, the default is normal
+
+All the report data should be printed to the console.
+
+HINT: Use some of the ES6 features: classes, subclasses, template strings, default parameters, maps, arrow functions, destructuring, etc.
+
+*/
+
+class TownElement {
+    constructor(name, buildYear){
+        this.name = name;
+        this.buildYear = buildYear;
+    }
+}
+
+class Park extends TownElement{
+    static noOfParks = 0;
+    static totalAge = 0;
+    constructor(name, buildYear, parkArea, noOfTrees){
+        super(name, buildYear);
+        this.parkArea = parkArea;
+        this.noOfTrees = noOfTrees;
+    }
+
+    calculateTreeDensity(){
+        const density = (this.noOfTrees/this.parkArea).toFixed(2);
+        console.log(`The park ${this.name}'s density is ${density} per square kilometer`);
+    }
+}
+
+const allParks = [  new Park('McGregor', 2000, 2.2, 300),
+                    new Park('Victoria', 1993, 3.4, 1004),  
+                    new Park('Queens Park', 1967, 5.3, 950)
+                 ];
+
+const printAverageAge = function(){
+    let totalAge = 0;
+    allParks.forEach(park=>totalAge+=(2019-park.buildYear));
+    console.log(`The average age of park is ${Math.round(totalAge/3)} years`);
+};
+
+// 3. name of park that has more than 1000 trees
+const parkWith1000Trees = function(){
+    for(let park of allParks){
+        if(park.noOfTrees<1000) continue;
+        console.log(`The ${park.name} has ${park.noOfTrees} trees`);
+    }
+};
+
+const reportParkData = function(){
+    console.log('-------------------PARK REPORT------------------');
+    
+    // 1. Park Density
+    allParks.forEach((park)=>park.calculateTreeDensity());
+
+    // 2. Average age
+    printAverageAge();
+
+    // 3. Park with more than 1000 trees
+    parkWith1000Trees();
+};
+
+class Street extends TownElement{
+    constructor(name, buildYear, length, size = 'normal'){
+        super(name, buildYear);
+        this.length = length;
+        this.size = size;
+    }
+
+    printStreetData(){
+        console.log(`The street ${this.name} is built in ${this.buildYear} and is a ${this.size} street`);
+    }
+}
+
+let allStreets = [new Street('Hollingworth', 1945, 3, 'small'),
+                 new Street('Ramji Nagar', 1989, 1.2),
+                new Street('Ellesmere', 2000, 34, 'big'),
+                new Street('Younge', 1900, 594, 'huge')];
+const calculateAverageLength = function(){
+    let totalLength = 0;
+    allStreets.forEach(street => totalLength+=street.length);
+    return [totalLength, totalLength/3];
+};
+
+const reportStreetData = function(){
+    console.log('-------------------STREET REPORT------------------');
+
+    // 4. Total and average length of streets
+    const [totalLen, avgLen] = calculateAverageLength();
+    console.log(`The total length of streets is ${totalLen.toFixed(2)} km and average is ${avgLen.toFixed(2)} km`);
+
+    // 5. print street build year with size info
+    allStreets.forEach(street=> street.printStreetData());
+};
+
+reportParkData();
+reportStreetData();
