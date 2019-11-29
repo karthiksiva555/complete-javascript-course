@@ -2,7 +2,8 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // four configurations: entry, output, loaders and plugins
 module.exports = {
-    entry:'./src/js/index.js', // this is where the bundling starts and evaluates all the imports and dependencies
+    entry:['./src/js/index.js','@babel/polyfill'], // this is where the bundling starts and evaluates all the imports and dependencies
+    // babel-polyfill is added in later point as one of the entries
     output:{ // this is where the bundled js should be saved with the below file name and under path mentioned
         path:path.resolve(__dirname, 'dist'), // when live reloading is enabled, the webpack dev server 
                                               //injects bundle.js to the dist/index.html on the fly
@@ -21,5 +22,18 @@ module.exports = {
             //delete dist/index.html to test if this setting is recreating the index.html in dist folder
             template:'./src/index.html'
         })
-    ]
+    ],
+    module:{
+        // array of loaders
+        rules:[
+            // loader
+            {
+                test:/\.js$/, // test for all the files that end with .js
+                exclude:/node_modules/, // ignore all js files inside node_modules
+                use:{
+                    loader:'babel-loader'
+                }
+            }
+        ]
+    }
 };
