@@ -1,5 +1,5 @@
 import Search from "../models/Search";
-import {elements, loadSpinner, clearSpinner} from '../views/utils';
+import {elements, loadSpinner, clearSpinner, elementStrings} from '../views/utils';
 import * as searchView from '../views/searchView';
 
 // Global app controller
@@ -73,6 +73,15 @@ async function onSearchClicked(){
 elements.searchForm.addEventListener('submit', e=>{
     e.preventDefault();
     onSearchClicked();
+});
+
+// on pagination button is clicked
+elements.resultsPagination.addEventListener('click', e=>{
+    //console.log(e.target.closest('.btn-inline'));
+    const buttonClicked = e.target.closest(`.${elementStrings.inline}`);
+    const pageToGo = parseInt(buttonClicked.dataset.goto);
+    searchView.clearRecipeList();
+    searchView.renderRecipes(state.search.recipes, pageToGo);
 });
 
 //onSearchClicked();

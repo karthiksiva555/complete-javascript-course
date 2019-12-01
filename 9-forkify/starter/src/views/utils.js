@@ -2,11 +2,13 @@ export const elements = {
     searchForm : document.querySelector('.search'),
     searchQuery: document.querySelector('.search__field'),
     recipeList: document.querySelector('.results__list'),
-    recipesDiv: document.querySelector('.results')
+    recipesDiv: document.querySelector('.results'),
+    resultsPagination: document.querySelector('.results__pages')    
 };
 
 export const elementStrings = {
-    loader:'loader'
+    loader:'loader',
+    inline:'btn-inline'
 }
 
 export const loadSpinner = (parent)=>{
