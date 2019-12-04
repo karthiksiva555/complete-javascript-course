@@ -24,10 +24,10 @@ const renderRecipe = recipe =>{
     
     // shorten the title if exceeding one line
     //console.log(limitedTitle(recipe.title));
-        
+    
     const recipeTemplate = `
     <li>
-        <a class="results__link" href="${recipe.source_url}">
+        <a class="results__link" href="#${recipe.recipe_id}">
             <figure class="results__fig">
                 <img src="${recipe.image_url}" alt="${recipe.title}">
             </figure>

@@ -1,6 +1,7 @@
 import Search from "../models/Search";
 import {elements, loadSpinner, clearSpinner, elementStrings} from '../views/utils';
 import * as searchView from '../views/searchView';
+import Recipe from "../models/Recipe";
 
 // Global app controller
 
@@ -90,3 +91,39 @@ elements.resultsPagination.addEventListener('click', e=>{
 //const search = new Search('bacon');
 //search.getResults().then(()=>console.log(search.recipes));
 //console.log(search.recipes);
+
+/**
+ * Recipe Controller
+ */
+
+ // when the hash in the URL changes, or page re-loads => call the Recipe model to get recipe based on hash
+
+async function getRecipe(){
+    // remove the # from the URL Hash value. Eg: #1234 => 1234
+    const id = window.location.hash.replace('#','');
+    
+    // if there is an ID exists in the URL 
+    if(id){
+
+        // load the spinner
+        loadSpinner(elements.recipeDiv);
+
+        // initialize the recipe model
+        state.recipe = new Recipe(id);
+        await state.recipe.getRecipe();
+        console.log(state.recipe);
+
+        // calculate time and servings
+        state.recipe.calculateTime();
+        state.recipe.noOfServings();
+
+        // parse ingredients
+        state.recipe.parseIngredients();
+        
+        // clear the spinner as the data processing has been complete
+        clearSpinner();
+    }
+};
+
+// hashchange and load are window object related events
+['hashchange', 'load'].forEach(event=>window.addEventListener(event, getRecipe));
