@@ -9,7 +9,8 @@ export const elements = {
 
 export const elementStrings = {
     loader:'loader',
-    inline:'btn-inline'
+    inline:'btn-inline',
+    activeLink: 'results__link--active'
 }
 
 export const loadSpinner = (parent)=>{

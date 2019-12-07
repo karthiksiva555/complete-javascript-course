@@ -2,6 +2,7 @@ import Search from "../models/Search";
 import {elements, loadSpinner, clearSpinner, elementStrings} from '../views/utils';
 import * as searchView from '../views/searchView';
 import Recipe from "../models/Recipe";
+import * as recipeView from '../views/recipeView';
 
 // Global app controller
 
@@ -108,6 +109,12 @@ async function getRecipe(){
         // load the spinner
         loadSpinner(elements.recipeDiv);
 
+        // clear the recipe page if already loaded with someother recipe
+        recipeView.clearRecipe();
+
+        // highlight the selector on recipe
+        recipeView.highlightRecipeSelection(id);
+
         // initialize the recipe model
         state.recipe = new Recipe(id);
         await state.recipe.getRecipe();
@@ -120,6 +127,9 @@ async function getRecipe(){
         // parse ingredients
         state.recipe.parseIngredients();
         
+        // render recipe on web page
+        recipeView.renderRecipe(state.recipe); 
+
         // clear the spinner as the data processing has been complete
         clearSpinner();
     }
