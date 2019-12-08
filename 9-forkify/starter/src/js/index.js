@@ -3,6 +3,8 @@ import {elements, loadSpinner, clearSpinner, elementStrings} from '../views/util
 import * as searchView from '../views/searchView';
 import Recipe from "../models/Recipe";
 import * as recipeView from '../views/recipeView';
+import * as shopListView from '../views/shopListView';
+import ShopList from "../models/ShopList";
 
 // Global app controller
 
@@ -46,6 +48,8 @@ import * as recipeView from '../views/recipeView';
  * search object
  */
 const state ={};
+
+window.state = state;
 
 async function onSearchClicked(){
     
@@ -113,13 +117,12 @@ async function getRecipe(){
         recipeView.clearRecipe();
 
         // highlight the selector on recipe
-        recipeView.highlightRecipeSelection(id);
+        if(state.recipe) recipeView.highlightRecipeSelection(id);
 
         // initialize the recipe model
         state.recipe = new Recipe(id);
         await state.recipe.getRecipe();
-        console.log(state.recipe);
-
+        
         // calculate time and servings
         state.recipe.calculateTime();
         state.recipe.noOfServings();
@@ -129,6 +132,7 @@ async function getRecipe(){
         
         // render recipe on web page
         recipeView.renderRecipe(state.recipe); 
+        shopListView.clearShoppingList();
 
         // clear the spinner as the data processing has been complete
         clearSpinner();
@@ -137,3 +141,55 @@ async function getRecipe(){
 
 // hashchange and load are window object related events
 ['hashchange', 'load'].forEach(event=>window.addEventListener(event, getRecipe));
+
+elements.recipeDiv.addEventListener('click', e=>{
+
+    // <className>,<className> * => element that matches className and all its child elements
+    if(e.target.matches(`.${elementStrings.servingDecrease}, .${elementStrings.servingDecrease} *`)){
+        if(state.recipe.servings>1){
+            state.recipe.updateServingsAndIngs('decrease');
+            recipeView.updateIngredientAndServings(state.recipe);     
+        }
+    } else if(e.target.matches(`.${elementStrings.servingIncrease},.${elementStrings.servingIncrease} *`)){
+        state.recipe.updateServingsAndIngs('increase');
+        recipeView.updateIngredientAndServings(state.recipe);     
+    } else if(e.target.matches(`.${elementStrings.btnAddToList}, .${elementStrings.btnAddToList} *`)){
+        controlShopList();
+    }
+});
+
+/**
+ * Shopping List Controller
+ */
+
+ // this exposes list to console so we can test the methods of ShopList()
+ // window.list = new ShopList();
+
+ const controlShopList = ()=>{
+    
+    if(!state.shopList) state.shopList = new ShopList();
+
+    shopListView.clearShoppingList();
+    state.recipe.parsedIngredients.forEach(ing=>{
+        // add the item to the list model
+        const item = state.shopList.addItem(ing.unitVal, ing.unit, ing.ingredient);
+
+        // add the item to the UI; we can also send ing as param; but item is optimal coz it has only three props, don't send extra props
+        shopListView.renderShoppingItem(item);
+    });
+ }
+
+// click on any of shopping list area
+elements.shoppingList.addEventListener('click', e=>{
+    const id = e.target.closest('.shopping__item').dataset.itemid;
+    
+    // if clicked on the shopping list item delete
+    if(e.target.matches('.shopping__delete, .shopping__delete *')){
+        state.shopList.deleteItem(id);
+        shopListView.deleteShoppingItem(id);
+    } else if(e.target.matches('.shopping__count-value')){
+        // when the arrow up / down clicked that updates the unit value
+        const newUnitVal = parseFloat(e.target.value, 10);
+        state.shopList.updateItemUnitVal(id, newUnitVal);
+    }
+});

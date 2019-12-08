@@ -31,6 +31,15 @@ export default class Recipe{
         this.servings = 4;
     }
 
+    updateServingsAndIngs(type){
+        
+        const newServings = type==='increase'?this.servings+1: this.servings-1
+        this.parsedIngredients.forEach(ing => {
+            ing.unitVal = (ing.unitVal/this.servings) * newServings;
+        });
+        this.servings = newServings;
+    }
+
     parseIngredients(){
 
         // standardize the units. Eg: tablespoons, tablespoon, table spoon => tbsp

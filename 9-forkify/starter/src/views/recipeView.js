@@ -9,7 +9,6 @@ export const formatUnitValue = unitVal => {
 
     // if value is 3.5 => return 3 1/2 
     // if value is 0.5 => return 1/2
-
     
     // integer, decimal 
     const [int, dec] = unitVal.toString().split('.').map(el=>parseInt(el, 10));
@@ -40,12 +39,13 @@ export const renderIngredient = ingredient => {
     `;
 };
 
+
 export const highlightRecipeSelection = id => {
 
     // clear the current selection, if any
     Array.from(document.querySelectorAll(`.${elementStrings.activeLink}`))
     .forEach(el=>el.classList.remove(`${elementStrings.activeLink}`));
-    console.log('test');
+    
     // highlight the current selction
     document.querySelector(`a[href*="#${id}"]`).classList.add(elementStrings.activeLink);
 };
@@ -74,12 +74,12 @@ export const renderRecipe = recipe => {
             <span class="recipe__info-text"> servings</span>
 
             <div class="recipe__info-buttons">
-                <button class="btn-tiny">
+                <button class="btn-tiny servings-decrease">
                     <svg>
                         <use href="img/icons.svg#icon-circle-with-minus"></use>
                     </svg>
                 </button>
-                <button class="btn-tiny">
+                <button class="btn-tiny servings-increase">
                     <svg>
                         <use href="img/icons.svg#icon-circle-with-plus"></use>
                     </svg>
@@ -97,7 +97,7 @@ export const renderRecipe = recipe => {
         <ul class="recipe__ingredient-list">
             ${recipe.parsedIngredients.map(ing => renderIngredient(ing)).join('')}
         </ul>
-        <button class="btn-small recipe__btn">
+        <button class="btn-small recipe__btn recipe__btn-addToList">
             <svg class="search__icon">
                 <use href="img/icons.svg#icon-shopping-cart"></use>
             </svg>
@@ -122,3 +122,18 @@ export const renderRecipe = recipe => {
 
     elements.recipeDiv.insertAdjacentHTML('afterbegin',recipeHTML);
 };
+
+export const updateIngredientAndServings = recipe =>{
+    
+    // update servings
+    document.querySelector('.recipe__info-data--people').textContent = recipe.servings;
+    
+    // updte the unit value for ingredients
+    const countElements = Array.from(document.querySelectorAll(`.${elementStrings.recipeCount}`));
+    countElements.forEach((el, i)=>{
+        el.textContent = formatUnitValue(recipe.parsedIngredients[i].unitVal);
+    });
+
+};
+
+
