@@ -5,6 +5,8 @@ import Recipe from "../models/Recipe";
 import * as recipeView from '../views/recipeView';
 import * as shopListView from '../views/shopListView';
 import ShopList from "../models/ShopList";
+import Likes from "../models/Likes";
+import * as likesView from '../views/likesView';
 
 // Global app controller
 
@@ -50,6 +52,9 @@ import ShopList from "../models/ShopList";
 const state ={};
 
 window.state = state;
+
+// For Testing
+state.likes = new Likes();
 
 async function onSearchClicked(){
     
@@ -131,7 +136,7 @@ async function getRecipe(){
         state.recipe.parseIngredients();
         
         // render recipe on web page
-        recipeView.renderRecipe(state.recipe); 
+        recipeView.renderRecipe(state.recipe, state.likes.isLiked(id)); 
         shopListView.clearShoppingList();
 
         // clear the spinner as the data processing has been complete
@@ -155,6 +160,8 @@ elements.recipeDiv.addEventListener('click', e=>{
         recipeView.updateIngredientAndServings(state.recipe);     
     } else if(e.target.matches(`.${elementStrings.btnAddToList}, .${elementStrings.btnAddToList} *`)){
         controlShopList();
+    } else if(e.target.matches('.recipe__love, .recipe__love *')){
+        controlLikes();
     }
 });
 
@@ -193,3 +200,26 @@ elements.shoppingList.addEventListener('click', e=>{
         state.shopList.updateItemUnitVal(id, newUnitVal);
     }
 });
+
+/**
+ * Likes Controller
+ */
+
+ const controlLikes = ()=>{
+    if(!state.likes) state.likes = new Likes();
+    
+    const currentId = state.recipe.recipe_id;
+
+    // if the current recipe is already liked
+    if(state.likes.isLiked(currentId)){
+        // remove the recipe from Likes list
+        state.likes.deleteLike(currentId);
+        // toggle the like button
+        likesView.toggleLikesBtn(false);
+    } else{
+        // add the recipe to Likes list
+        state.likes.addLike(currentId, state.recipe.title, state.recipe.publisher,state.recipe.image_url);
+        // toggle the like button 
+        likesView.toggleLikesBtn(true);
+    }
+ };
