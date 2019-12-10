@@ -53,8 +53,8 @@ const state ={};
 
 window.state = state;
 
-// For Testing
-state.likes = new Likes();
+// For Testing: before adding localStorage
+//state.likes = new Likes();
 
 async function onSearchClicked(){
     
@@ -216,10 +216,31 @@ elements.shoppingList.addEventListener('click', e=>{
         state.likes.deleteLike(currentId);
         // toggle the like button
         likesView.toggleLikesBtn(false);
+        // remove like from the list
+        likesView.removeFromLikesList(currentId);        
     } else{
         // add the recipe to Likes list
         state.likes.addLike(currentId, state.recipe.title, state.recipe.publisher,state.recipe.image_url);
         // toggle the like button 
         likesView.toggleLikesBtn(true);
+        // render the likes in the list
+        const like = {
+            id:currentId, title:state.recipe.title, author:state.recipe.publisher, img:state.recipe.image_url
+        };
+        likesView.addToLikesList(like);
     }
+
+    likesView.toggleLikesList(state.likes.likesCount());
+ };
+
+ window.addEventListener('load', ()=>{
+    restoreLikes();
+ });
+
+ const restoreLikes = ()=>{
+    state.likes = new Likes();
+
+    state.likes.restoreData();
+
+    state.likes.likes.forEach(lk => likesView.addToLikesList(lk));
  };

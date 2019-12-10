@@ -6,7 +6,9 @@ export const elements = {
     resultsPagination: document.querySelector('.results__pages'),
     recipeDiv: document.querySelector('.recipe'),
     recipeServings: document.querySelector('.recipe__info-data--people'), // this didn't work-> check why? may be because DOM doesn't has it yet
-    shoppingList: document.querySelector('.shopping__list')
+    shoppingList: document.querySelector('.shopping__list'),
+    likesList: document.querySelector('.likes__list'),
+    likesDiv:document.querySelector('.likes')
 };
 
 export const elementStrings = {

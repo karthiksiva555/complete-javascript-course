@@ -6,7 +6,7 @@ export const clearSearchInput = ()=>{
     elements.searchQuery.value = '';
 };
 
-const limitedTitle = (title, limit=17)=>{
+export const limitedTitle = (title, limit=17)=>{
     
     if(title.length<=limit) return title;
     
